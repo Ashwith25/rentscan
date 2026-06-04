@@ -25,6 +25,7 @@ const statusDot      = document.getElementById('status-dot');
 const themeBtn       = document.getElementById('theme-toggle');
 const clearBtn       = document.getElementById('clear-btn');
 const rescanBtn      = document.getElementById('rescan-btn');
+const settingsBtn    = document.getElementById('settings-btn');
 const dashboardBtn   = document.getElementById('dashboard-btn');
 const searchInput    = document.getElementById('search-input');
 const sortSelect     = document.getElementById('sort-select');
@@ -34,6 +35,12 @@ const chipLease      = document.getElementById('chip-lease');
 const toast          = document.getElementById('toast');
 const scanBar        = document.getElementById('scan-bar');
 const scanText       = document.getElementById('scan-text');
+
+// Settings Drawer DOM refs
+const settingsDrawer   = document.getElementById('settings-drawer');
+const closeSettingsBtn = document.getElementById('close-settings-btn');
+const saveSettingsBtn  = document.getElementById('save-settings-btn');
+const geminiKeyInput   = document.getElementById('gemini-api-key');
 
 // ─── Theme ───────────────────────────────────────────────────────────
 function applyTheme(theme) {
@@ -51,9 +58,13 @@ dashboardBtn?.addEventListener('click', () => {
 
 // ─── Load Data ────────────────────────────────────────────────────────
 async function loadData() {
-  const data = await chrome.storage.local.get(['listings', 'theme', 'lastSeen', 'totalCaptured']);
+  const data = await chrome.storage.local.get(['listings', 'theme', 'lastSeen', 'totalCaptured', 'geminiApiKey']);
   currentTheme = data.theme || 'dark';
   applyTheme(currentTheme);
+
+  if (data.geminiApiKey) {
+    geminiKeyInput.value = data.geminiApiKey;
+  }
 
   allListings = (data.listings || []).map(l => ({
     ...l,
@@ -224,7 +235,9 @@ function renderCard(l, isNew = false) {
     : `<span class="price-none">Price TBD</span>`;
 
   const bedsStr = l.bedrooms === null ? '' : l.bedrooms === 0 ? 'Studio' : `${l.bedrooms}BR`;
-  const typeStr = [l.propertyType, bedsStr].filter(Boolean).join(' · ');
+  const bathsStr = l.bathrooms === null ? '' : `${l.bathrooms}BA`;
+  const roomConfig = [bedsStr, bathsStr].filter(Boolean).join(' / ');
+  const typeStr = [l.propertyType, roomConfig].filter(Boolean).join(' · ');
 
   const dateStr = l.date instanceof Date
     ? l.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
@@ -311,6 +324,22 @@ function amenityIcon(a) {
 function esc(s) {
   return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+
+// ─── Settings Drawer Toggle & Save ────────────────────────────────────
+settingsBtn?.addEventListener('click', () => {
+  settingsDrawer.classList.toggle('hidden');
+});
+
+closeSettingsBtn?.addEventListener('click', () => {
+  settingsDrawer.classList.add('hidden');
+});
+
+saveSettingsBtn?.addEventListener('click', async () => {
+  const key = geminiKeyInput.value.trim();
+  await chrome.storage.local.set({ geminiApiKey: key });
+  showToast(key ? 'API Key saved!' : 'API Key removed.', 'success');
+  settingsDrawer.classList.add('hidden');
+});
 
 // ─── Clear ────────────────────────────────────────────────────────────
 clearBtn.addEventListener('click', async () => {

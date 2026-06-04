@@ -84,6 +84,13 @@
   }
 
   function extractBedrooms(text) {
+    // Try 2b2b style first
+    const b2bMatch = /(\d+)\s*b\s*(\d+(?:\.\d+)?)\s*b/i.exec(text);
+    if (b2bMatch) {
+      const n = parseInt(b2bMatch[1], 10);
+      if (n >= 0 && n <= 10) return n;
+    }
+
     const patterns = [
       /(\d+)\s*(?:bhk|bed(?:room)?s?|br|bdr|bdrm)/gi,
       /(\d+)[-\s]bed(?:room)?/gi,
@@ -103,6 +110,31 @@
     }
     return null;
   }
+
+  function extractBathrooms(text) {
+    // Try 2b2b style first
+    const b2bMatch = /(\d+)\s*b\s*(\d+(?:\.\d+)?)\s*b/i.exec(text);
+    if (b2bMatch) {
+      const n = parseFloat(b2bMatch[2]);
+      if (n >= 0 && n <= 10) return n;
+    }
+
+    const patterns = [
+      /(\d+(?:\.\d+)?)\s*(?:bath(?:room)?s?|ba\b)/gi,
+      /(\d+(?:\.\d+)?)[-\s]bath(?:room)?s?/gi,
+    ];
+
+    for (const p of patterns) {
+      p.lastIndex = 0;
+      const m = p.exec(text);
+      if (m) {
+        const n = parseFloat(m[1]);
+        if (n >= 0 && n <= 10) return n;
+      }
+    }
+    return null;
+  }
+
 
   function extractAvailability(text) {
     const patterns = [
@@ -285,6 +317,7 @@
     const extracted = {
       price:        extractPrice(text),
       bedrooms:     extractBedrooms(text),
+      bathrooms:    extractBathrooms(text),
       availability: extractAvailability(text),
       location:     extractLocation(text),
       furnished:    extractFurnishedStatus(text),

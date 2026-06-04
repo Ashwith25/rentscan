@@ -700,3 +700,103 @@ body {
   color: var(--text-3) !important;
   font-size: 0.68rem;
 }
+
+/* ─── Settings Drawer ───────────────────────────────────────────── */
+.settings-drawer {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: slideDown 0.2s ease both;
+  flex-shrink: 0;
+}
+
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
+  margin-bottom: 4px;
+}
+
+.drawer-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+
+.drawer-header .close-btn {
+  background: none;
+  border: none;
+  color: var(--text-3);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 2px 5px;
+  transition: color var(--transition);
+}
+.drawer-header .close-btn:hover {
+  color: var(--text);
+}
+
+.setting-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.setting-group label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.input-row {
+  display: flex;
+  gap: 6px;
+}
+
+.input-row input {
+  flex: 1;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  font-family: var(--font);
+  font-size: 12px;
+  color: var(--text);
+  transition: all var(--transition);
+}
+.input-row input:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 2px var(--brand-glow);
+}
+
+.save-btn {
+  background: var(--brand);
+  color: white;
+  border: 1px solid var(--brand-dim);
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.save-btn:hover {
+  background: var(--brand-dim);
+}
+
+.setting-help {
+  font-size: 0.65rem;
+  color: var(--text-3);
+  line-height: 1.4;
+}
+

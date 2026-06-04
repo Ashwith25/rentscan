@@ -39,6 +39,8 @@ const filterDate          = document.getElementById('filter-date');
 const customDateGroup     = document.getElementById('custom-date-group');
 const filterDateFrom      = document.getElementById('filter-date-from');
 const clearFiltersBtn     = document.getElementById('clear-filters-btn');
+const geminiApiKeyInput   = document.getElementById('gemini-api-key');
+const saveApiKeyBtn       = document.getElementById('save-api-key-btn');
 
 const themeToggleBtn      = document.getElementById('theme-toggle-btn');
 const clearDataBtn        = document.getElementById('clear-data-btn');
@@ -81,9 +83,13 @@ themeToggleBtn.addEventListener('click', () => {
 
 // ─── Load Storage Data ────────────────────────────────────────────────
 async function loadData() {
-  const data = await chrome.storage.local.get(['listings', 'theme']);
+  const data = await chrome.storage.local.get(['listings', 'theme', 'geminiApiKey']);
   currentTheme = data.theme || 'dark';
   applyTheme(currentTheme);
+
+  if (data.geminiApiKey) {
+    geminiApiKeyInput.value = data.geminiApiKey;
+  }
 
   const raw = (data.listings || []).map(l => ({ ...l, date: new Date(l.date) }));
   // Prune listings older than 30 days on load
@@ -343,8 +349,10 @@ function buildCardHtml(l) {
     ? `$${l.price.toLocaleString()}<span>/mo</span>`
     : '<span>Price TBD</span>';
 
-  const bedsStr = l.bedrooms === null ? '' : l.bedrooms === 0 ? 'Studio' : `${l.bedrooms} Bedroom`;
-  const typeStr = [l.propertyType, bedsStr].filter(Boolean).join(' · ');
+  const bedsStr = l.bedrooms === null ? '' : l.bedrooms === 0 ? 'Studio' : `${l.bedrooms} Bed`;
+  const bathsStr = l.bathrooms === null ? '' : `${l.bathrooms} Bath`;
+  const roomConfig = [bedsStr, bathsStr].filter(Boolean).join(' / ');
+  const typeStr = [l.propertyType, roomConfig].filter(Boolean).join(' · ');
 
   const dateStr = l.date instanceof Date
     ? l.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -621,6 +629,13 @@ importFileInput?.addEventListener('change', (event) => {
   };
 
   reader.readAsText(file);
+});
+
+// ─── Save API Key listener ──────────────────────────────────────────
+saveApiKeyBtn?.addEventListener('click', async () => {
+  const key = geminiApiKeyInput.value.trim();
+  await chrome.storage.local.set({ geminiApiKey: key });
+  showToast(key ? 'Gemini API Key saved successfully!' : 'Gemini API Key removed.', 'success');
 });
 
 // ─── Initialize ──────────────────────────────────────────────────────

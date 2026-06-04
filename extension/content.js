@@ -290,22 +290,16 @@ async function processMessageNode(node, retryOnEmpty = true) {
     processedIds.add(msgId);
   }
 
-  const extractListing = window.RentScan?.extractListing;
-  if (!extractListing) {
-    console.error("[RentScan] window.RentScan.extractListing not found!");
-    return;
-  }
   const group = getCurrentGroupName() || currentGroupName;
   const sender = extractSenderName(node);
-  const date = extractTimestamp(node);
-
-  const listing = extractListing({ sender, message: text, group, date });
-  if (!listing) return;
-
-  listing.date = (listing.date instanceof Date ? listing.date : new Date()).toISOString();
+  const dateObj = extractTimestamp(node);
+  const dateStr = (dateObj instanceof Date ? dateObj : new Date()).toISOString();
 
   if (!checkContext()) return;
-  chrome.runtime.sendMessage({ type: 'NEW_LISTING', listing }, (res) => {
+  chrome.runtime.sendMessage({
+    type: 'EXTRACT_AND_ADD',
+    msg: { sender, message: text, group, date: dateStr }
+  }, (res) => {
     if (!checkContext()) return;
     if (chrome.runtime.lastError) return; // SW asleep, will retry on next wake
     if (res?.ok) {

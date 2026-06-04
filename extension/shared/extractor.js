@@ -84,6 +84,13 @@ function extractPrice(text) {
 }
 
 function extractBedrooms(text) {
+  // Try 2b2b style first
+  const b2bMatch = /(\d+)\s*b\s*(\d+(?:\.\d+)?)\s*b/i.exec(text);
+  if (b2bMatch) {
+    const n = parseInt(b2bMatch[1], 10);
+    if (n >= 0 && n <= 10) return n;
+  }
+
   const patterns = [
     /(\d+)\s*(?:bhk|bed(?:room)?s?|br|bdr|bdrm)/gi,
     /(\d+)[-\s]bed(?:room)?/gi,
@@ -104,6 +111,31 @@ function extractBedrooms(text) {
   }
   return null;
 }
+
+function extractBathrooms(text) {
+  // Try 2b2b style first
+  const b2bMatch = /(\d+)\s*b\s*(\d+(?:\.\d+)?)\s*b/i.exec(text);
+  if (b2bMatch) {
+    const n = parseFloat(b2bMatch[2]);
+    if (n >= 0 && n <= 10) return n;
+  }
+
+  const patterns = [
+    /(\d+(?:\.\d+)?)\s*(?:bath(?:room)?s?|ba\b)/gi,
+    /(\d+(?:\.\d+)?)[-\s]bath(?:room)?s?/gi,
+  ];
+
+  for (const pattern of patterns) {
+    pattern.lastIndex = 0;
+    const match = pattern.exec(text);
+    if (match) {
+      const n = parseFloat(match[1]);
+      if (n >= 0 && n <= 10) return n;
+    }
+  }
+  return null;
+}
+
 
 function extractAvailability(text) {
   const patterns = [
@@ -258,7 +290,7 @@ function computeConfidence(text, extracted) {
   return Math.min(100, Math.max(0, score));
 }
 
-function extractPhoneNumbers(text) {
+export function extractPhoneNumbers(text) {
   const phoneRegex = /(?:\+?\d{1,4}[-.\s]?)?\(?\d{2,4}\)?[-.\s]?\d{3,4}[-.\s]?\d{3,4}\b/g;
   const matches = text.match(phoneRegex) || [];
   const validNumbers = [];
@@ -281,7 +313,7 @@ function extractPhoneNumbers(text) {
   return [...new Set(validNumbers)];
 }
 
-function extractSpoc(text) {
+export function extractSpoc(text) {
   const patterns = [
     /(?:spoc|poc|contact)(?:\s*name)?\s*[:-]\s*([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+){0,2})/i,
     /(?:ping|contact|call|reach\s+out\s+to)\s+([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+){0,1})(?:\s+at|\s+on|\s*[,.\n]|$)/i,
@@ -312,6 +344,7 @@ export function extractListing(msg) {
   const extracted = {
     price: extractPrice(text),
     bedrooms: extractBedrooms(text),
+    bathrooms: extractBathrooms(text),
     availability: extractAvailability(text),
     location: extractLocation(text),
     furnished: extractFurnishedStatus(text),
