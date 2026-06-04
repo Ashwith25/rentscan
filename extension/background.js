@@ -140,8 +140,8 @@ async function processBatchQueue() {
   if (geminiApiKey) {
     console.log(`[RentScan] Gemini API Key configured. Attempting Gemini AI extraction for ${queueToProcess.length} messages...`);
     
-    // Chunk size increased to 25 to reduce total API calls by 60%
-    const CHUNK_SIZE = 25;
+    // Chunk size increased to 50 to minimize total API calls
+    const CHUNK_SIZE = 50;
     for (let i = 0; i < queueToProcess.length; i += CHUNK_SIZE) {
       const chunk = queueToProcess.slice(i, i + CHUNK_SIZE);
       
