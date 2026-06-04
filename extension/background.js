@@ -111,6 +111,21 @@ function queueMessageForExtraction(msg, resolve) {
   batchTimeout = setTimeout(processBatchQueue, 600);
 }
 
+async function runLocalRegexExtraction(msg) {
+  try {
+    const dateObj = new Date(msg.date);
+    const listing = extractListing({ ...msg, date: dateObj });
+    if (listing) {
+      listing.date = dateObj.toISOString();
+      await addListing(listing);
+      return true;
+    }
+  } catch (e) {
+    console.error('[RentScan] Local regex extraction failed for message:', e);
+  }
+  return false;
+}
+
 async function processBatchQueue() {
   const queueToProcess = [...batchQueue];
   const resolversToProcess = [...activeResolvers];
@@ -124,36 +139,41 @@ async function processBatchQueue() {
 
   if (geminiApiKey) {
     console.log(`[RentScan] Gemini API Key configured. Attempting Gemini AI extraction for ${queueToProcess.length} messages...`);
-    try {
-      // Chunk processing to handle rate limit and model token constraints
-      const CHUNK_SIZE = 10;
-      for (let i = 0; i < queueToProcess.length; i += CHUNK_SIZE) {
-        const chunk = queueToProcess.slice(i, i + CHUNK_SIZE);
-        await extractChunkWithGemini(chunk, geminiApiKey);
+    
+    // Chunk size increased to 25 to reduce total API calls by 60%
+    const CHUNK_SIZE = 25;
+    for (let i = 0; i < queueToProcess.length; i += CHUNK_SIZE) {
+      const chunk = queueToProcess.slice(i, i + CHUNK_SIZE);
+      
+      // Delay subsequent chunk requests by 13s to stay under the 5 RPM free tier limit
+      if (i > 0) {
+        console.log(`[RentScan] Rate limit safety: waiting 13s before calling Gemini API for the next chunk...`);
+        await new Promise(r => setTimeout(r, 13000));
       }
-      resolversToProcess.forEach(resolve => resolve({ ok: true }));
-      return;
-    } catch (err) {
-      console.error('[RentScan] Gemini extraction failed, falling back to local regex:', err);
+
+      try {
+        await extractChunkWithGemini(chunk, geminiApiKey);
+      } catch (err) {
+        console.error(`[RentScan] Gemini API call failed for chunk (${i} to ${i + chunk.length}), falling back to local regex:`, err);
+        let fallbackSuccessCount = 0;
+        for (const msg of chunk) {
+          const success = await runLocalRegexExtraction(msg);
+          if (success) fallbackSuccessCount++;
+        }
+        console.log(`[RentScan] Fallback completed for chunk. Extracted ${fallbackSuccessCount} listings using local regex.`);
+      }
     }
-  } else {
-    console.log(`[RentScan] No Gemini API Key configured. Using local regex parser for ${queueToProcess.length} messages.`);
+    
+    resolversToProcess.forEach(resolve => resolve({ ok: true }));
+    return;
   }
 
-  // Fallback to local regex extractor
+  // No API key configured: Fallback to local regex extractor for all
+  console.log(`[RentScan] No Gemini API Key configured. Using local regex parser for ${queueToProcess.length} messages.`);
   let localExtractedCount = 0;
   for (const msg of queueToProcess) {
-    try {
-      const dateObj = new Date(msg.date);
-      const listing = extractListing({ ...msg, date: dateObj });
-      if (listing) {
-        listing.date = dateObj.toISOString();
-        await addListing(listing);
-        localExtractedCount++;
-      }
-    } catch (e) {
-      console.error('[RentScan] Local regex fallback failed for message:', e);
-    }
+    const success = await runLocalRegexExtraction(msg);
+    if (success) localExtractedCount++;
   }
   console.log(`[RentScan] Local regex parsing completed. Extracted ${localExtractedCount} listings from ${queueToProcess.length} messages.`);
 
