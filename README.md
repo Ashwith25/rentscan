@@ -9,7 +9,7 @@ RentScan comes in two flavours:
 | **How it works** | Scans WhatsApp Web live, auto-captures listings in real-time | Upload a `.txt` WhatsApp chat export |
 | **Setup** | Install extension → open WhatsApp Web | No install — just open the site |
 | **Storage** | Local `chrome.storage` (never leaves your browser) | In-memory (cleared on refresh) |
-| **Location** | [`/extension`](./extension) | [`/web`](./web) |
+| **Location** | [`/extension`](./extension) | [`/docs`](./docs) |
 
 All processing is 100% client-side. No servers, no APIs, no tracking.
 
@@ -53,13 +53,13 @@ A standalone browser tool for users who prefer not to install an extension.
 
 ### Run locally
 ```bash
-cd web
+cd docs
 python3 -m http.server 8080
 # Then open http://localhost:8080
 ```
 
 ### Deploy to GitHub Pages
-Go to **Settings → Pages → Source: main branch / `/web` folder**
+Go to **Settings → Pages → Source: main branch / `/docs` folder**
 
 ---
 
@@ -79,7 +79,7 @@ rentscan/
 │   ├── sidepanel/      # Extension side panel UI
 │   └── dashboard/      # Full-page dashboard (opens in new tab)
 │
-└── web/                # Standalone web app (GitHub Pages)
+└── docs/                # Standalone web app (GitHub Pages)
     ├── index.html
     ├── style.css
     ├── app.js
