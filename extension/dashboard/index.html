@@ -118,35 +118,6 @@
 
         <button id="clear-filters-btn" class="secondary-btn">Reset All Filters</button>
       </div>
-
-      <!-- Settings Section -->
-      <div class="sidebar-section">
-        <h3>Settings</h3>
-        <div class="filter-group">
-          <label for="gemini-api-key">Gemini API Key</label>
-          <div class="api-key-row" style="display: flex; gap: 6px;">
-            <input type="password" id="gemini-api-key" placeholder="AIzaSy..." style="flex: 1; padding: 6px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--input-bg); color: var(--text); font-family: inherit; font-size: 12px;" autocomplete="off">
-            <button id="save-api-key-btn" class="primary-btn" style="padding: 6px 12px; margin: 0; background: var(--brand); color: white; border: none; font-size: 11px; font-weight: 600; border-radius: var(--radius-sm); cursor: pointer; transition: all 180ms ease;">Save</button>
-          </div>
-          <span style="font-size: 10px; color: var(--text-3); margin-top: 4px; display: block; line-height: 1.3;">
-            Get a free key at <a href="https://aistudio.google.com/" target="_blank" style="color: var(--brand); text-decoration: underline;">AI Studio</a>.
-          </span>
-        </div>
-      </div>
-
-      <!-- Actions Section -->
-      <div class="sidebar-section">
-        <h3>Import History</h3>
-        <button id="import-btn" class="primary-btn" style="background: var(--brand-gradient); color: white; border: none; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-          <span>📥</span> Import WhatsApp Chat (.txt)
-        </button>
-        <input type="file" id="import-file-input" accept=".txt" style="display: none;">
-      </div>
-
-      <div class="sidebar-footer">
-        <button id="theme-toggle-btn" class="theme-toggle">🌙 Dark Mode</button>
-        <button id="clear-data-btn" class="danger-btn">Clear All Data</button>
-      </div>
     </aside>
 
     <!-- Main Workspace -->
@@ -157,6 +128,13 @@
           <p>Real-time consolidated rental postings parsed directly from WhatsApp Web.</p>
         </div>
         <div class="header-right">
+          <div class="header-toolbar">
+            <button id="import-btn" class="toolbar-btn">📥 Import Chat</button>
+            <input type="file" id="import-file-input" accept=".txt" style="display: none;">
+            <button id="settings-btn" class="toolbar-btn">⚙️ Settings</button>
+            <button id="theme-toggle-btn" class="toolbar-btn">🌙 Dark Mode</button>
+            <button id="clear-data-btn" class="toolbar-btn danger">🗑 Clear Data</button>
+          </div>
           <div class="whatsapp-status">
             <div class="status-indicator" id="whatsapp-indicator"></div>
             <span id="whatsapp-status-text">WhatsApp Web Inactive</span>
@@ -209,6 +187,28 @@
         </div>
         <div class="inspect-actions">
           <button class="secondary-btn" id="copy-raw-btn">📋 Copy Message Text</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay hidden" id="dashboard-settings-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>⚙️ Extraction Settings</h2>
+        <button class="close-modal-btn" id="close-settings-modal">×</button>
+      </div>
+      <div class="modal-body" style="padding-top: 15px;">
+        <div class="filter-group" style="margin-bottom: 0;">
+          <label for="gemini-api-key" style="font-weight: 600; font-size: 13px; color: var(--text-2); display: block; margin-bottom: 8px;">Gemini API Key (Free)</label>
+          <div class="api-key-row" style="display: flex; gap: 8px;">
+            <input type="password" id="gemini-api-key" placeholder="AIzaSy..." style="flex: 1; padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--input-bg); color: var(--text); font-family: inherit; font-size: 13px;" autocomplete="off">
+            <button id="save-api-key-btn" class="primary-btn" style="padding: 8px 16px; margin: 0; background: var(--brand); color: white; border: none; font-size: 12px; font-weight: 600; border-radius: var(--radius-sm); cursor: pointer; transition: all 180ms ease;">Save Key</button>
+          </div>
+          <span style="font-size: 11px; color: var(--text-dim); margin-top: 8px; display: block; line-height: 1.4;">
+            Powers natural language listing extraction (bed/bath counts, location, contacts). Get a free API key at <a href="https://aistudio.google.com/" target="_blank" style="color: var(--brand); text-decoration: underline;">Google AI Studio</a>.
+          </span>
         </div>
       </div>
     </div>

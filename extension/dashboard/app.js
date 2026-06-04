@@ -62,6 +62,11 @@ const inspectText         = document.getElementById('inspect-text');
 const closeInspectModal   = document.getElementById('close-inspect-modal');
 const copyRawBtn          = document.getElementById('copy-raw-btn');
 
+// Settings Modal
+const settingsBtn         = document.getElementById('settings-btn');
+const settingsModal       = document.getElementById('dashboard-settings-modal');
+const closeSettingsModal  = document.getElementById('close-settings-modal');
+
 const toast               = document.getElementById('toast');
 
 // Notification Banner
@@ -495,11 +500,14 @@ function openInspectModalFor(l) {
 
 closeContactModal.addEventListener('click', () => contactModal.classList.add('hidden'));
 closeInspectModal.addEventListener('click', () => inspectModal.classList.add('hidden'));
+closeSettingsModal.addEventListener('click', () => settingsModal.classList.add('hidden'));
+settingsBtn?.addEventListener('click', () => settingsModal.classList.remove('hidden'));
 
 // Close modal when clicking background
 window.addEventListener('click', (e) => {
   if (e.target === contactModal) contactModal.classList.add('hidden');
   if (e.target === inspectModal) inspectModal.classList.add('hidden');
+  if (e.target === settingsModal) settingsModal.classList.add('hidden');
 });
 
 // Copy Raw Message Text
@@ -636,6 +644,7 @@ saveApiKeyBtn?.addEventListener('click', async () => {
   const key = geminiApiKeyInput.value.trim();
   await chrome.storage.local.set({ geminiApiKey: key });
   showToast(key ? 'Gemini API Key saved successfully!' : 'Gemini API Key removed.', 'success');
+  settingsModal.classList.add('hidden');
 });
 
 // ─── Initialize ──────────────────────────────────────────────────────
