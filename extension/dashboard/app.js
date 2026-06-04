@@ -354,8 +354,8 @@ function buildCardHtml(l) {
     ? `$${l.price.toLocaleString()}<span>/mo</span>`
     : '<span>Price TBD</span>';
 
-  const bedsStr = l.bedrooms === null ? '' : l.bedrooms === 0 ? 'Studio' : `${l.bedrooms} Bed`;
-  const bathsStr = l.bathrooms === null ? '' : `${l.bathrooms} Bath`;
+  const bedsStr = l.bedrooms == null ? '' : l.bedrooms === 0 ? 'Studio' : `${l.bedrooms} Bed`;
+  const bathsStr = l.bathrooms == null ? '' : `${l.bathrooms} Bath`;
   const roomConfig = [bedsStr, bathsStr].filter(Boolean).join(' / ');
   const typeStr = [l.propertyType, roomConfig].filter(Boolean).join(' · ');
 

@@ -234,8 +234,8 @@ function renderCard(l, isNew = false) {
     ? `$${l.price.toLocaleString()}<span class="price-unit">/mo</span>`
     : `<span class="price-none">Price TBD</span>`;
 
-  const bedsStr = l.bedrooms === null ? '' : l.bedrooms === 0 ? 'Studio' : `${l.bedrooms}BR`;
-  const bathsStr = l.bathrooms === null ? '' : `${l.bathrooms}BA`;
+  const bedsStr = l.bedrooms == null ? '' : l.bedrooms === 0 ? 'Studio' : `${l.bedrooms}BR`;
+  const bathsStr = l.bathrooms == null ? '' : `${l.bathrooms}BA`;
   const roomConfig = [bedsStr, bathsStr].filter(Boolean).join(' / ');
   const typeStr = [l.propertyType, roomConfig].filter(Boolean).join(' · ');
 
