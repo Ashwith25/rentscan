@@ -40,20 +40,12 @@ const customDateGroup     = document.getElementById('custom-date-group');
 const filterDateFrom      = document.getElementById('filter-date-from');
 const clearFiltersBtn     = document.getElementById('clear-filters-btn');
 
-const sortChks = {
-  date: document.getElementById('sort-chk-date'),
-  price: document.getElementById('sort-chk-price'),
-  confidence: document.getElementById('sort-chk-confidence')
-};
-const sortBadges = {
-  date: document.getElementById('sort-badge-date'),
-  price: document.getElementById('sort-badge-price'),
-  confidence: document.getElementById('sort-badge-confidence')
-};
 const themeToggleBtn      = document.getElementById('theme-toggle-btn');
 const clearDataBtn        = document.getElementById('clear-data-btn');
 const whatsappIndicator   = document.getElementById('whatsapp-indicator');
 const whatsappStatusText  = document.getElementById('whatsapp-status-text');
+
+const sortChipEls = document.querySelectorAll('.sort-chip');
 
 // Modals
 const contactModal        = document.getElementById('contact-modal');
@@ -193,44 +185,36 @@ filterDateFrom.addEventListener('change', (e) => {
   applyFiltersAndSort();
 });
 
-// Setup Multi-Sort listeners and badge updates
+// ─── Sort Chip Logic ──────────────────────────────────────────────────
 function updateSortUI() {
-  // Clear all badges
-  Object.values(sortBadges).forEach(b => { if (b) b.textContent = ''; });
-  
-  // Set badges based on activeSorts order
-  activeSorts.forEach((sortType, idx) => {
-    const badge = sortBadges[sortType];
-    const chk = sortChks[sortType];
-    if (badge) badge.textContent = idx + 1;
-    if (chk) chk.checked = true;
-  });
-
-  // Uncheck items not in activeSorts
-  Object.keys(sortChks).forEach(sortType => {
-    const chk = sortChks[sortType];
-    if (chk && !activeSorts.includes(sortType)) {
-      chk.checked = false;
+  sortChipEls.forEach(chip => {
+    const sortType = chip.dataset.sort;
+    const idx = activeSorts.indexOf(sortType);
+    if (idx !== -1) {
+      chip.classList.add('active');
+      chip.setAttribute('data-priority', idx + 1);
+    } else {
+      chip.classList.remove('active');
+      chip.removeAttribute('data-priority');
     }
   });
 }
 
-Object.keys(sortChks).forEach(sortType => {
-  const chk = sortChks[sortType];
-  chk?.addEventListener('change', (e) => {
-    if (e.target.checked) {
-      // Add to priority queue
-      if (!activeSorts.includes(sortType)) {
-        activeSorts.push(sortType);
-      }
-    } else {
-      // Remove from priority queue
+sortChipEls.forEach(chip => {
+  chip.addEventListener('click', () => {
+    const sortType = chip.dataset.sort;
+    if (activeSorts.includes(sortType)) {
+      // Already active — remove from queue and renumber remaining
       activeSorts = activeSorts.filter(s => s !== sortType);
+    } else {
+      // Not active — append to priority queue
+      activeSorts.push(sortType);
     }
     updateSortUI();
     applyFiltersAndSort();
   });
 });
+
 
 clearFiltersBtn.addEventListener('click', () => {
   searchInput.value = '';
@@ -240,9 +224,9 @@ clearFiltersBtn.addEventListener('click', () => {
   filterDate.value = '';
   filterDateFrom.value = '';
   customDateGroup.classList.add('hidden');
-  
+
   filters = { search: '', beds: '', furnished: '', lease: '', date: '', dateFrom: '' };
-  activeSorts = ['date']; // reset to default sort (Newest first)
+  activeSorts = ['date'];
   updateSortUI();
   applyFiltersAndSort();
   showToast('Filters reset successfully', 'success');

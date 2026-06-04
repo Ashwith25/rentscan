@@ -108,23 +108,11 @@
         </div>
 
         <div class="filter-group">
-          <label>Sort By (Select multiple for priority)</label>
-          <div class="sort-checkbox-list">
-            <label class="sort-checkbox-item">
-              <input type="checkbox" value="date" id="sort-chk-date">
-              <span class="chk-label">Newest First</span>
-              <span class="chk-badge" id="sort-badge-date"></span>
-            </label>
-            <label class="sort-checkbox-item">
-              <input type="checkbox" value="price" id="sort-chk-price">
-              <span class="chk-label">Cheapest First</span>
-              <span class="chk-badge" id="sort-badge-price"></span>
-            </label>
-            <label class="sort-checkbox-item">
-              <input type="checkbox" value="confidence" id="sort-chk-confidence">
-              <span class="chk-label">Best Match</span>
-              <span class="chk-badge" id="sort-badge-confidence"></span>
-            </label>
+          <label>Sort By <span class="sort-hint">tap to prioritise, tap again to remove</span></label>
+          <div class="sort-chips" id="sort-chips">
+            <button class="sort-chip" data-sort="date" id="sort-chip-date">📅 Newest First</button>
+            <button class="sort-chip" data-sort="price" id="sort-chip-price">💰 Cheapest First</button>
+            <button class="sort-chip" data-sort="confidence" id="sort-chip-confidence">⭐ Best Match</button>
           </div>
         </div>
 

@@ -940,61 +940,68 @@ body {
   color: white;
 }
 
-/* ─── Sort Priority Checkbox Styles ─────────────────────────────── */
-.sort-checkbox-list {
+/* ─── Sort Chips ─────────────────────────────────────────────────── */
+.sort-hint {
+  font-size: 0.65rem;
+  font-weight: 400;
+  color: var(--text-dim);
+  text-transform: none;
+  letter-spacing: 0;
+  margin-left: 4px;
+}
+
+.sort-chips {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   gap: 8px;
-  background-color: var(--input-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 10px;
   margin-top: 6px;
 }
 
-.sort-checkbox-item {
-  display: flex;
+.sort-chip {
+  position: relative;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--border);
+  background-color: var(--input-bg);
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
   cursor: pointer;
-  padding: 6px 8px;
-  border-radius: var(--radius-sm);
-  transition: background-color var(--transition-fast);
+  transition: all var(--transition-fast);
   user-select: none;
+  white-space: nowrap;
 }
 
-.sort-checkbox-item:hover {
-  background-color: var(--surface);
+.sort-chip:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+  background-color: rgba(37, 211, 102, 0.05);
 }
 
-.sort-checkbox-item input[type="checkbox"] {
-  width: 15px;
-  height: 15px;
-  accent-color: var(--brand);
-  cursor: pointer;
+.sort-chip.active {
+  background: rgba(37, 211, 102, 0.12);
+  border-color: var(--brand);
+  color: var(--brand);
+  padding-right: 10px;
 }
 
-.sort-checkbox-item .chk-label {
-  font-size: 0.82rem;
-  color: var(--text);
-  flex: 1;
-}
-
-.sort-checkbox-item .chk-badge {
-  font-size: 0.65rem;
-  font-weight: 700;
-  background: var(--brand-gradient);
-  color: white;
-  min-width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  display: flex;
+/* Priority number badge shown on active chips */
+.sort-chip.active::after {
+  content: attr(data-priority);
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  opacity: 0;
-  transition: opacity var(--transition-fast);
-}
-
-.sort-checkbox-item input[type="checkbox"]:checked ~ .chk-badge {
-  opacity: 1;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--brand-gradient);
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 800;
+  margin-left: 4px;
+  flex-shrink: 0;
 }
