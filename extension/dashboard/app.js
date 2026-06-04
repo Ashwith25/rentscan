@@ -8,6 +8,16 @@ import { extractListing } from '../shared/extractor.js';
 import { deduplicate } from '../shared/deduplicator.js';
 
 // ─── State ───────────────────────────────────────────────────────────
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+
+function pruneOldListings(listings) {
+  const cutoff = Date.now() - THIRTY_DAYS_MS;
+  return listings.filter(l => {
+    const ts = l.date ? new Date(l.date).getTime() : 0;
+    return ts >= cutoff;
+  });
+}
+
 let allListings = [];
 let filteredListings = [];
 let currentTheme = 'dark';
@@ -83,13 +93,16 @@ async function loadData() {
   currentTheme = data.theme || 'dark';
   applyTheme(currentTheme);
 
-  allListings = (data.listings || []).map(l => ({
-    ...l,
-    date: new Date(l.date),
-  }));
+  const raw = (data.listings || []).map(l => ({ ...l, date: new Date(l.date) }));
+  // Prune listings older than 30 days on load
+  allListings = pruneOldListings(raw);
+  if (allListings.length < raw.length) {
+    // Persist the pruned list back so stale entries don't linger in storage
+    await chrome.storage.local.set({ listings: allListings });
+  }
 
   updateStats();
-  updateSortUI(); // Draw checkboxes and badges
+  updateSortUI();
   applyFiltersAndSort();
 }
 
@@ -98,16 +111,14 @@ chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== 'local') return;
   if (changes.listings) {
     const oldVal = changes.listings.oldValue || [];
-    const newVal = changes.listings.newValue || [];
+    const rawNew = (changes.listings.newValue || []).map(l => ({ ...l, date: new Date(l.date) }));
 
-    allListings = newVal.map(l => ({
-      ...l,
-      date: new Date(l.date),
-    }));
+    // Prune on live update too
+    allListings = pruneOldListings(rawNew);
     updateStats();
     applyFiltersAndSort();
 
-    const diff = newVal.length - oldVal.length;
+    const diff = allListings.length - oldVal.length;
     if (diff > 0) {
       showNotificationBanner(diff);
     }
@@ -602,18 +613,21 @@ importFileInput?.addEventListener('change', (event) => {
         return;
       }
 
-      // 3. Retrieve existing listings, merge, and deduplicate
+      // 3. Retrieve existing listings, merge, deduplicate, and prune to 30 days
       const data = await chrome.storage.local.get('listings');
       const existingListings = data.listings || [];
-      
+
       const combined = [...existingListings, ...newListings];
       const deduped = deduplicate(combined);
+      const pruned = pruneOldListings(deduped);
 
       // 4. Save back to local storage
-      await chrome.storage.local.set({ listings: deduped });
+      await chrome.storage.local.set({ listings: pruned });
 
-      const addedCount = deduped.length - existingListings.length;
-      showToast(`Imported! Found ${newListings.length} listings (${addedCount} new)`, 'success');
+      const addedCount = pruned.length - existingListings.length;
+      const skippedOld = deduped.length - pruned.length;
+      const skippedMsg = skippedOld > 0 ? ` (${skippedOld} older than 30 days skipped)` : '';
+      showToast(`Imported! Found ${newListings.length} listings (${addedCount} new${skippedMsg})`, 'success');
     } catch (err) {
       console.error('[RentScan] Failed to import chat export:', err);
       showToast('Error parsing file: ' + err.message, 'error');

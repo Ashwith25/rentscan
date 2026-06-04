@@ -48,30 +48,41 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
+// ─── 30-Day Pruning ──────────────────────────────────────────────────
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+
+function pruneOldListings(listings) {
+  const cutoff = Date.now() - THIRTY_DAYS_MS;
+  return listings.filter(l => {
+    const ts = l.date ? new Date(l.date).getTime() : 0;
+    return ts >= cutoff;
+  });
+}
+
 // ─── Add Listing ─────────────────────────────────────────────────────
 async function addListing(newListing) {
   const { listings = [], totalCaptured = 0, lastSeen = 0 } = await chrome.storage.local.get(['listings', 'totalCaptured', 'lastSeen']);
 
-  // Dedup against existing + new
+  // Dedup against existing + new, then prune anything older than 30 days
   const combined = [...listings, newListing];
   const deduped = deduplicate(combined);
+  const pruned = pruneOldListings(deduped);
 
   // Did we actually add something new (not a dup of existing)?
-  const isActuallyNew = deduped.length > listings.length;
+  const isActuallyNew = pruned.length > listings.length;
 
   await chrome.storage.local.set({
-    listings: deduped,
+    listings: pruned,
     totalCaptured: totalCaptured + 1,
     lastUpdated: Date.now(),
   });
 
   if (isActuallyNew) {
     // Update badge
-    const unseenCount = deduped.length - lastSeen;
+    const unseenCount = pruned.length - lastSeen;
     if (unseenCount > 0) {
       await chrome.action.setBadgeText({ text: String(unseenCount) });
       await chrome.action.setBadgeBackgroundColor({ color: '#25D366' });
     }
-
   }
 }
