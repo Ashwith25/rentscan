@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RentScan — WhatsApp Rental Aggregator</title>
+  <meta name="description" content="Automatically extract and aggregate rental listings from WhatsApp group chat exports. Filter by price, bedrooms, amenities and more." />
+  <meta name="keywords" content="rental listings, WhatsApp, apartment finder, rent aggregator" />
+  <meta property="og:title" content="RentScan — WhatsApp Rental Aggregator" />
+  <meta property="og:description" content="Extract rental listings from WhatsApp group exports automatically." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay hidden" id="loading-overlay" role="status" aria-live="polite">
+  <div class="loading-spinner" aria-hidden="true"></div>
+  <p class="loading-text">Parsing messages &amp; extracting listings…</p>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast" role="alert" aria-live="polite"></div>
+
+<!-- App Wrapper -->
+<div class="app-wrapper">
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="logo" aria-label="RentScan Home">
+        <div class="logo-icon" aria-hidden="true">🏠</div>
+        <div class="logo-text">Rent<span>Scan</span></div>
+      </a>
+
+      <!-- Search -->
+      <div class="header-search" role="search">
+        <span class="search-icon" aria-hidden="true">🔍</span>
+        <input
+          type="search"
+          id="filter-search"
+          placeholder="Search listings, location, sender…"
+          aria-label="Search listings"
+          autocomplete="off"
+        />
+      </div>
+
+      <div class="header-actions">
+        <button class="btn btn-ghost filter-toggle-btn" id="filter-toggle" aria-label="Toggle filters" aria-expanded="false">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18M7 12h10M11 18h2"/></svg>
+          Filters
+        </button>
+        <button class="btn btn-secondary" id="clear-all" title="Clear all loaded listings" aria-label="Clear all listings">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m3 3 18 18M19 12H3m8-8-4 4 4 4"/></svg>
+          Clear
+        </button>
+        <button class="btn-icon" id="theme-toggle" aria-label="Toggle dark/light mode" title="Toggle theme">
+          <!-- Icon injected by JS -->
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Upload Section -->
+  <section class="hero-section" aria-label="Upload WhatsApp Exports">
+    <h1 class="hero-title">
+      Find Rentals from<br/>
+      <span class="gradient-text">WhatsApp Groups</span>
+    </h1>
+    <p class="hero-subtitle">
+      Upload WhatsApp chat exports (.txt) and we'll automatically extract all rental listings — completely free, processed locally in your browser.
+    </p>
+
+    <!-- Upload Zone -->
+    <div
+      class="upload-zone"
+      id="upload-zone"
+      role="button"
+      tabindex="0"
+      aria-label="Upload WhatsApp chat export files. Click or drag and drop."
+      onkeydown="if(event.key==='Enter'||event.key===' ')document.getElementById('file-input').click()"
+    >
+      <span class="upload-icon" aria-hidden="true">📲</span>
+      <h3>Drop WhatsApp exports here</h3>
+      <p>Upload one or more <strong>.txt</strong> files exported from WhatsApp groups</p>
+      <div class="upload-actions">
+        <button class="btn btn-primary" id="upload-btn" onclick="document.getElementById('file-input').click(); event.stopPropagation()">
+          📂 Choose Files
+        </button>
+        <button class="btn btn-secondary" id="load-demo">
+          ✨ Load Demo Data
+        </button>
+      </div>
+      <input
+        type="file"
+        id="file-input"
+        accept=".txt"
+        multiple
+        class="hidden"
+        aria-label="Upload WhatsApp export files"
+      />
+    </div>
+
+    <!-- How It Works -->
+    <div class="how-it-works" role="list" aria-label="How to use RentScan">
+      <div class="step" role="listitem">
+        <div class="step-num" aria-hidden="true">1</div>
+        <div class="step-text">
+          <strong>Export from WhatsApp</strong>
+          <p>Open group → ⋮ → Export Chat → Without Media</p>
+        </div>
+      </div>
+      <div class="step" role="listitem">
+        <div class="step-num" aria-hidden="true">2</div>
+        <div class="step-text">
+          <strong>Upload the .txt file</strong>
+          <p>Drag &amp; drop or click to upload. Multiple groups supported.</p>
+        </div>
+      </div>
+      <div class="step" role="listitem">
+        <div class="step-num" aria-hidden="true">3</div>
+        <div class="step-text">
+          <strong>Browse &amp; Filter</strong>
+          <p>Listings are auto-extracted, deduplicated and displayed.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Bar -->
+  <div class="stats-bar hidden" id="stats-bar" role="status" aria-live="polite">
+    <div class="stats-inner">
+      <div class="stat-item">
+        <span class="stat-label">Listings</span>
+        <span class="stat-value brand" id="total-count">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Price Range</span>
+        <span class="stat-value" id="price-range">—</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Groups</span>
+        <span class="stat-value" id="groups-count">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Duplicates removed</span>
+        <span class="stat-value" id="dedup-count">0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="content-wrapper" id="main-content">
+
+    <!-- Filter Panel -->
+    <aside class="filter-panel" id="filter-panel" aria-label="Filter listings">
+      <h3>Filters</h3>
+
+      <div class="filter-group">
+        <label for="filter-bedrooms">Bedrooms</label>
+        <select id="filter-bedrooms" aria-label="Filter by number of bedrooms">
+          <option value="">Any</option>
+          <option value="0">Studio</option>
+          <option value="1">1 Bedroom</option>
+          <option value="2">2 Bedrooms</option>
+          <option value="3">3 Bedrooms</option>
+          <option value="4+">4+ Bedrooms</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Price Range ($/mo)</label>
+        <div class="price-range-inputs">
+          <input
+            type="number"
+            id="filter-min-price"
+            placeholder="Min"
+            min="0"
+            aria-label="Minimum price per month"
+          />
+          <input
+            type="number"
+            id="filter-max-price"
+            placeholder="Max"
+            min="0"
+            aria-label="Maximum price per month"
+          />
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label for="filter-furnished">Furnished Status</label>
+        <select id="filter-furnished" aria-label="Filter by furnished status">
+          <option value="">Any</option>
+          <option value="fully furnished">Fully Furnished</option>
+          <option value="semi-furnished">Semi-Furnished</option>
+          <option value="unfurnished">Unfurnished</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="filter-lease-type">Lease Type</label>
+        <select id="filter-lease-type" aria-label="Filter by lease type">
+          <option value="">Any</option>
+          <option value="short-term">Short-term / Temporary</option>
+          <option value="long-term">Long-term / Permanent</option>
+        </select>
+      </div>
+
+      <button class="btn btn-secondary" id="clear-filters" style="width:100%;justify-content:center">
+        Clear Filters
+      </button>
+    </aside>
+
+    <!-- Listings -->
+    <section class="listings-main" aria-label="Rental listings">
+      <div class="listings-toolbar">
+        <span class="filtered-count" id="filtered-count" aria-live="polite"></span>
+        <div class="sort-wrapper">
+          <label for="sort-select">Sort:</label>
+          <select id="sort-select" aria-label="Sort listings by">
+            <option value="date-desc">Newest First</option>
+            <option value="date-asc">Oldest First</option>
+            <option value="price-asc">Price: Low → High</option>
+            <option value="price-desc">Price: High → Low</option>
+            <option value="confidence">Best Match</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="listings-grid" role="list" aria-label="Rental listings"></div>
+
+      <div class="empty-state" id="empty-state" role="status">
+        <span class="empty-icon">📲</span>
+        <p>Upload a WhatsApp chat export to see rental listings.</p>
+        <button class="btn btn-primary" id="empty-demo-btn-main">✨ Load Demo Data</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script type="module" src="app.js"></script>
+<script>
+  // Fallback demo button (before app.js loads)
+  document.getElementById('empty-demo-btn-main')?.addEventListener('click', () => {
+    document.getElementById('load-demo')?.click();
+  });
+</script>
+</body>
+</html>

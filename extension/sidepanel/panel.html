@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RentScan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="panel.css" />
+</head>
+<body>
+
+<div class="panel-wrapper">
+
+  <!-- Header -->
+  <header class="panel-header">
+    <div class="logo">
+      <div class="logo-icon">🏠</div>
+      <div class="logo-text">Rent<span>Scan</span></div>
+    </div>
+    <div class="header-actions">
+      <div class="status-dot" id="status-dot" title="Watching WhatsApp Web"></div>
+      <button class="icon-btn" id="theme-toggle" title="Toggle dark/light mode" aria-label="Toggle theme"></button>
+      <button class="icon-btn" id="dashboard-btn" title="Open full dashboard in a new tab" aria-label="Open Dashboard">🖥️</button>
+      <button class="icon-btn" id="rescan-btn" title="Rescan current WhatsApp group" aria-label="Rescan group">🔄</button>
+      <button class="icon-btn danger" id="clear-btn" title="Clear all listings" aria-label="Clear listings">🗑</button>
+    </div>
+  </header>
+
+  <!-- Scan progress bar (hidden when not scanning) -->
+  <div class="scan-bar hidden" id="scan-bar">
+    <div class="scan-bar-inner">
+      <div class="scan-spinner"></div>
+      <span id="scan-text">Scanning history…</span>
+    </div>
+    <div class="scan-track"><div class="scan-fill" id="scan-fill"></div></div>
+  </div>
+
+  <!-- Stats strip -->
+  <div class="stats-strip" id="stats-strip">
+    <div class="stat">
+      <span class="stat-val brand" id="stat-count">0</span>
+      <span class="stat-lbl">Listings</span>
+    </div>
+    <div class="stat">
+      <span class="stat-val" id="stat-price">—</span>
+      <span class="stat-lbl">Price range</span>
+    </div>
+    <div class="stat">
+      <span class="stat-val" id="stat-dupes">0</span>
+      <span class="stat-lbl">Dupes removed</span>
+    </div>
+  </div>
+
+  <!-- Search + filter row -->
+  <div class="toolbar">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="search" id="search-input" placeholder="Search listings…" autocomplete="off" aria-label="Search listings" />
+    </div>
+    <select id="sort-select" aria-label="Sort by">
+      <option value="date-desc">Newest</option>
+      <option value="price-asc">$ Low→High</option>
+      <option value="price-desc">$ High→Low</option>
+      <option value="confidence">Best Match</option>
+    </select>
+  </div>
+
+  <!-- Filter chips -->
+  <div class="filter-chips" role="group" aria-label="Filters">
+    <select id="chip-beds" class="chip-select" aria-label="Bedrooms">
+      <option value="">🛏 Any beds</option>
+      <option value="0">Studio</option>
+      <option value="1">1 Bed</option>
+      <option value="2">2 Beds</option>
+      <option value="3">3 Beds</option>
+      <option value="4+">4+ Beds</option>
+    </select>
+    <select id="chip-furnished" class="chip-select" aria-label="Furnished status">
+      <option value="">🛋 Any</option>
+      <option value="fully furnished">Furnished</option>
+      <option value="semi-furnished">Semi</option>
+      <option value="unfurnished">Unfurnished</option>
+    </select>
+    <select id="chip-lease" class="chip-select" aria-label="Lease type">
+      <option value="">📋 Any lease</option>
+      <option value="short-term">Short-term</option>
+      <option value="long-term">Long-term</option>
+    </select>
+  </div>
+
+  <!-- Listings -->
+  <div class="listings-scroll" id="listings-scroll" role="list">
+    <!-- Populated by JS -->
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" id="empty-state">
+    <div class="empty-icon">👀</div>
+    <p id="empty-message">Open WhatsApp Web to start capturing listings automatically.</p>
+    <div class="empty-steps">
+      <div class="mini-step"><span>1</span> Open <strong>web.whatsapp.com</strong></div>
+      <div class="mini-step"><span>2</span> Browse your rental groups</div>
+      <div class="mini-step"><span>3</span> Listings appear here live ✨</div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" role="alert" aria-live="polite"></div>
+
+</div>
+
+<script src="panel.js"></script>
+</body>
+</html>

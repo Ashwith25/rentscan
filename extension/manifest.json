@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "RentScan — WhatsApp Rental Finder",
+  "version": "1.0.0",
+  "description": "Automatically captures rental listings from WhatsApp Web group messages in real-time. No uploads needed.",
+  "permissions": [
+    "storage",
+    "sidePanel",
+    "scripting",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://web.whatsapp.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://web.whatsapp.com/*"],
+      "js": ["shared/extractor-cs.js", "content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "side_panel": {
+    "default_path": "sidepanel/panel.html"
+  },
+  "action": {
+    "default_title": "RentScan — Open Panel"
+  }
+}

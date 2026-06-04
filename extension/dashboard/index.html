@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RentScan — Full Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Dynamic Notification Banner -->
+  <div class="notification-banner hidden" id="notification-banner">
+    <span class="banner-icon">✨</span>
+    <span id="banner-text">RentScan fetched new listings!</span>
+    <button class="banner-close" id="banner-close-btn" aria-label="Close notification">×</button>
+  </div>
+
+  <div class="app-layout">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <div class="logo-icon">🏠</div>
+          <div class="logo-text">Rent<span>Scan</span></div>
+        </div>
+        <span class="badge-live">Live</span>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="sidebar-section">
+        <h3>Overview</h3>
+        <div class="mini-stats">
+          <div class="mini-stat-card">
+            <span class="val" id="stat-total">0</span>
+            <span class="lbl">Total Listings</span>
+          </div>
+          <div class="mini-stat-card">
+            <span class="val" id="stat-dupes">0</span>
+            <span class="lbl">Duplicates</span>
+          </div>
+          <div class="mini-stat-card">
+            <span class="val" id="stat-price">—</span>
+            <span class="lbl">Price Range</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters Panel -->
+      <div class="sidebar-section filters-section">
+        <h3>Filter Listings</h3>
+        
+        <div class="filter-group">
+          <label for="search-input">Search Keywords</label>
+          <div class="search-input-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-input" placeholder="Price, location, amenities...">
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label for="filter-beds">Bedrooms</label>
+          <select id="filter-beds">
+            <option value="">Any Bedrooms</option>
+            <option value="0">Studio</option>
+            <option value="1">1 Bedroom</option>
+            <option value="2">2 Bedrooms</option>
+            <option value="3">3 Bedrooms</option>
+            <option value="4+">4+ Bedrooms</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="filter-furnished">Furnished Status</label>
+          <select id="filter-furnished">
+            <option value="">Any Status</option>
+            <option value="fully furnished">Fully Furnished</option>
+            <option value="semi-furnished">Semi-Furnished</option>
+            <option value="unfurnished">Unfurnished</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="filter-lease">Lease Type</label>
+          <select id="filter-lease">
+            <option value="">Any Type</option>
+            <option value="short-term">Short-Term (Sublet/Temp)</option>
+            <option value="long-term">Long-Term (Permanent)</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="filter-date">Date Posted</label>
+          <select id="filter-date">
+            <option value="">Any Time</option>
+            <option value="30">Last 30 Days</option>
+            <option value="60">Last 60 Days</option>
+            <option value="custom">Custom From Date...</option>
+          </select>
+        </div>
+
+        <div class="filter-group hidden" id="custom-date-group">
+          <label for="filter-date-from">From Date</label>
+          <input type="date" id="filter-date-from">
+        </div>
+
+        <div class="filter-group">
+          <label>Sort By (Select multiple for priority)</label>
+          <div class="sort-checkbox-list">
+            <label class="sort-checkbox-item">
+              <input type="checkbox" value="date" id="sort-chk-date">
+              <span class="chk-label">Newest First</span>
+              <span class="chk-badge" id="sort-badge-date"></span>
+            </label>
+            <label class="sort-checkbox-item">
+              <input type="checkbox" value="price" id="sort-chk-price">
+              <span class="chk-label">Cheapest First</span>
+              <span class="chk-badge" id="sort-badge-price"></span>
+            </label>
+            <label class="sort-checkbox-item">
+              <input type="checkbox" value="confidence" id="sort-chk-confidence">
+              <span class="chk-label">Best Match</span>
+              <span class="chk-badge" id="sort-badge-confidence"></span>
+            </label>
+          </div>
+        </div>
+
+        <button id="clear-filters-btn" class="secondary-btn">Reset All Filters</button>
+      </div>
+
+      <!-- Actions Section -->
+      <div class="sidebar-section">
+        <h3>Import History</h3>
+        <button id="import-btn" class="primary-btn" style="background: var(--brand-gradient); color: white; border: none; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <span>📥</span> Import WhatsApp Chat (.txt)
+        </button>
+        <input type="file" id="import-file-input" accept=".txt" style="display: none;">
+      </div>
+
+      <div class="sidebar-footer">
+        <button id="theme-toggle-btn" class="theme-toggle">🌙 Dark Mode</button>
+        <button id="clear-data-btn" class="danger-btn">Clear All Data</button>
+      </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <main class="main-content">
+      <header class="content-header">
+        <div class="header-left">
+          <h1>Rental Aggregator Dashboard</h1>
+          <p>Real-time consolidated rental postings parsed directly from WhatsApp Web.</p>
+        </div>
+        <div class="header-right">
+          <div class="whatsapp-status">
+            <div class="status-indicator" id="whatsapp-indicator"></div>
+            <span id="whatsapp-status-text">WhatsApp Web Inactive</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Scrollable Grid Wrapper -->
+      <div class="grid-container" id="grid-container">
+        <!-- Cards will render here -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="dashboard-empty-state" class="dashboard-empty hidden">
+        <div class="empty-animation">🔍</div>
+        <h2>No listings found</h2>
+        <p>Try refining your filters or open WhatsApp Web and browse some rental groups to capture new ones.</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- Contact Modal -->
+  <div class="modal-overlay hidden" id="contact-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>📞 Contact Information</h2>
+        <button class="close-modal-btn" id="close-contact-modal">×</button>
+      </div>
+      <div class="modal-body" id="contact-modal-body">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Raw Message Inspect Drawer/Modal -->
+  <div class="modal-overlay hidden" id="inspect-modal">
+    <div class="modal-card inspect-card">
+      <div class="modal-header">
+        <h2>🔍 Message Inspector</h2>
+        <button class="close-modal-btn" id="close-inspect-modal">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="inspect-meta">
+          <div class="meta-item"><span>Sender:</span> <strong id="inspect-sender">Bob</strong></div>
+          <div class="meta-item"><span>Group:</span> <strong id="inspect-group">Sublets</strong></div>
+          <div class="meta-item"><span>Date:</span> <strong id="inspect-date">Today</strong></div>
+        </div>
+        <div class="inspect-text-container">
+          <pre id="inspect-text"></pre>
+        </div>
+        <div class="inspect-actions">
+          <button class="secondary-btn" id="copy-raw-btn">📋 Copy Message Text</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
