@@ -123,6 +123,7 @@ async function processBatchQueue() {
   const { geminiApiKey } = await chrome.storage.local.get('geminiApiKey');
 
   if (geminiApiKey) {
+    console.log(`[RentScan] Gemini API Key configured. Attempting Gemini AI extraction for ${queueToProcess.length} messages...`);
     try {
       // Chunk processing to handle rate limit and model token constraints
       const CHUNK_SIZE = 10;
@@ -135,9 +136,12 @@ async function processBatchQueue() {
     } catch (err) {
       console.error('[RentScan] Gemini extraction failed, falling back to local regex:', err);
     }
+  } else {
+    console.log(`[RentScan] No Gemini API Key configured. Using local regex parser for ${queueToProcess.length} messages.`);
   }
 
   // Fallback to local regex extractor
+  let localExtractedCount = 0;
   for (const msg of queueToProcess) {
     try {
       const dateObj = new Date(msg.date);
@@ -145,16 +149,19 @@ async function processBatchQueue() {
       if (listing) {
         listing.date = dateObj.toISOString();
         await addListing(listing);
+        localExtractedCount++;
       }
     } catch (e) {
       console.error('[RentScan] Local regex fallback failed for message:', e);
     }
   }
+  console.log(`[RentScan] Local regex parsing completed. Extracted ${localExtractedCount} listings from ${queueToProcess.length} messages.`);
 
   resolversToProcess.forEach(resolve => resolve({ ok: true }));
 }
 
 async function extractChunkWithGemini(chunk, apiKey) {
+  console.log(`[RentScan] Calling Gemini API for a chunk of ${chunk.length} messages...`);
   const prompt = `Analyze the following WhatsApp messages and extract rental listing details for each one.
 Ignore any messages that are clearly NOT rental listings (e.g. furniture sales, moving sales, electronics, parking-spot-only, chatter).
 
@@ -219,7 +226,9 @@ ${chunk.map((msg, idx) => `[${idx}]: "${msg.message.replace(/"/g, '\\"')}"`).joi
     throw new Error('Empty response from Gemini API');
   }
 
+  console.log(`[RentScan] Gemini API call successful. Parsing response...`);
   const results = JSON.parse(textResponse);
+  let rentalFoundCount = 0;
   for (const res of results) {
     if (res.isRental) {
       const msg = chunk[res.index];
@@ -248,9 +257,12 @@ ${chunk.map((msg, idx) => `[${idx}]: "${msg.message.replace(/"/g, '\\"')}"`).joi
         duplicateCount: 0
       };
 
+      console.log(`[RentScan] Extracted listing using Gemini: ${listing.bedrooms || 0} Bed / ${listing.bathrooms || 0} Bath, Price: $${listing.price || 'TBD'}, Location: "${listing.location || 'Unknown'}"`);
       await addListing(listing);
+      rentalFoundCount++;
     }
   }
+  console.log(`[RentScan] Chunk processing complete. Found ${rentalFoundCount} rental listings out of ${chunk.length} messages.`);
 }
 
 function generateId(sender, message, dateStr) {
